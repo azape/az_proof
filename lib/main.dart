@@ -1,11 +1,14 @@
-import 'package:az_proof/app/data/preferences/user_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:url_strategy/url_strategy.dart';
+
+import 'app/az_theme.dart';
+import 'app/data/preferences/user_preferences.dart';
 import 'app/routes/app_pages.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   setPathUrlStrategy();
 
   runApp(
@@ -16,10 +19,10 @@ void main() async {
       getPages: AppPages.routes,
       theme: ThemeData(
         fontFamily: 'Nunito Sans',
-        appBarTheme: AppBarTheme(color: Color(0xFFFE7C6E)),
+        appBarTheme: const AppBarTheme(color: AzColors.red),
       ),
-      defaultTransition: Transition.noTransition,
-      transitionDuration: Duration(seconds: 0),
+      defaultTransition: Transition.fade,
+      transitionDuration: const Duration(milliseconds: 500),
       locale: const Locale('pt', 'BR'),
       supportedLocales: const [Locale('pt', 'BR'), Locale('en', 'US')],
       localizationsDelegates: const [
@@ -35,5 +38,5 @@ Future<String> authenticate() async {
   final user = UserPreferences();
   String value = await user.getToken();
 
-  return value.trim().isEmpty ? Routes.LOGIN : Routes.HOME;
+  return value.trim().isEmpty ? Routes.kLogin : Routes.kHome;
 }

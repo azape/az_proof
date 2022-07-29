@@ -2,10 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+
+import '../../../az_theme.dart';
 import '../../../routes/app_pages.dart';
 import '../controllers/home_controller.dart';
+import 'widgets/datagrid/datagrid.dart';
+import 'widgets/totals.dart';
 
-class HomeView extends GetView<HomeController> {
+class HomeView extends StatefulWidget {
+  const HomeView({Key? key}) : super(key: key);
+
+  @override
+  State<HomeView> createState() => _HomeViewState();
+}
+
+class _HomeViewState extends State<HomeView> {
+  final controller = Get.find<HomeController>();
+
+  @override
+  void initState() {
+    controller.getData();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,7 +38,7 @@ class HomeView extends GetView<HomeController> {
                   color: Colors.black26.withOpacity(0),
                   spreadRadius: 1,
                   blurRadius: 1,
-                  offset: Offset(0.0, 0.5),
+                  offset: const Offset(0.0, 0.5),
                 ),
               ],
             ),
@@ -29,44 +48,40 @@ class HomeView extends GetView<HomeController> {
               child: ListView(
                 children: [
                   Container(
-                    margin: EdgeInsets.symmetric(vertical: 20),
+                    margin: const EdgeInsets.symmetric(vertical: 20),
                     width: (kToolbarHeight * 1.1),
                     height: (kToolbarHeight * 1.1),
                     child: Center(
-                      child: SvgPicture.asset(
-                        'assets/images/reduzido.svg',
-                        clipBehavior: Clip.antiAlias,
+                      child: Hero(
+                        tag: 'logo',
+                        child: SvgPicture.asset(
+                          'assets/images/reduzido.svg',
+                          clipBehavior: Clip.antiAlias,
+                        ),
                       ),
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: ListTile(
-                        textColor: Color(0xFF8F95B2),
-                        iconColor: Color(0xFF8F95B2),
+                        textColor: AzColors.red,
+                        iconColor: AzColors.red,
                         selected: true,
                         selectedColor: Colors.white,
-                        selectedTileColor: Color(0xFFFE7C6E),
+                        selectedTileColor: AzColors.red,
                         horizontalTitleGap: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
-                          side: BorderSide(
-                            color: Color(0xFFF5F5F5),
+                          side: const BorderSide(
+                            color: AzColors.whiteSmoke,
                           ),
                         ),
                         leading: SvgPicture.asset(
                           'assets/images/home.svg',
                           color: Colors.white,
                         ),
-                        title: Text(
-                          'Dashboard',
-                          style: TextStyle(
-                            fontFamily: 'NunitoSans',
-                            fontWeight: FontWeight.w400,
-                            fontSize: 14,
-                          ),
-                        ),
-                        onTap: () => Get.offAndToNamed(Routes.HOME)),
+                        title: Text('Dashboard', style: AzTypography.nunito),
+                        onTap: () => Get.offAndToNamed(Routes.kHome)),
                   )
                 ],
               ),
@@ -84,44 +99,120 @@ class HomeView extends GetView<HomeController> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            SizedBox(height: 80),
+                            const SizedBox(height: 80),
                             Container(
                               constraints: BoxConstraints(
                                 minHeight:
                                     MediaQuery.of(context).size.height - 135,
                               ),
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                 vertical: 25,
                                 horizontal: 40,
                               ),
                               child: Container(
-                                  // O conteúdo do seu teste fica AQUI!
-                                  ),
+                                // O conteúdo do seu teste fica AQUI!
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 40,
+                                  vertical: 24,
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.max,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Obx(() {
+                                      if (!controller.loading &&
+                                          controller.dashboardData
+                                                  .averageTicket !=
+                                              null) {
+                                        return Totals();
+                                      } else {
+                                        return const SizedBox(height: 230);
+                                      }
+                                    }),
+                                    const SizedBox(height: 24),
+                                    Obx(() {
+                                      if (controller.loading) {
+                                        var size =
+                                            MediaQuery.of(context).size.height *
+                                                0.14;
+                                        return Center(
+                                          child: Stack(
+                                            children: [
+                                              SizedBox(
+                                                height: size,
+                                                width: size,
+                                                child: Center(
+                                                  child: Text(
+                                                    'Carregando...',
+                                                    style: AzTypography
+                                                        .nunitodeepBlueGray,
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                height: size,
+                                                width: size,
+                                                child:
+                                                    const CircularProgressIndicator(
+                                                  strokeWidth: 8,
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation(
+                                                    AzColors.red,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      } else if (controller
+                                              .dashboardData.averageTicket !=
+                                          null) {
+                                        return DataGrid();
+                                      } else {
+                                        return const SizedBox();
+                                      }
+                                    }),
+                                  ],
+                                ),
+                              ),
                             ),
                             Container(
-                              color: Color(0xffF5F5F5),
+                              color: AzColors.whiteSmoke,
                               height: 56,
                               width: double.infinity,
-                              padding: EdgeInsets.symmetric(vertical: 21),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 21,
+                                horizontal: 40,
+                              ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
+                                mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
+                                  Text(
+                                    'Termos de Uso',
+                                    style: AzTypography.nunitoBlueGray.copyWith(
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 32),
+                                  Text(
+                                    'Politica de Privacidade',
+                                    style: AzTypography.nunitoBlueGray.copyWith(
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                  const Spacer(),
                                   SvgPicture.asset(
                                     'assets/images/logo_azape.svg',
                                     width: 30,
                                     height: 30,
                                   ),
-                                  SizedBox(width: 16),
+                                  const SizedBox(width: 16),
                                   Text(
                                     '® Desenvolvido por Azape',
-                                    style: TextStyle(
-                                      fontFamily: 'NunitoSans',
-                                      fontWeight: FontWeight.w400,
-                                      fontSize: 14,
-                                      color: Color(0xFF97A1A8),
-                                    ),
+                                    style: AzTypography.nunitoBlueGray,
                                   ),
-                                  SizedBox(width: 48),
                                 ],
                               ),
                             ),
@@ -133,7 +224,7 @@ class HomeView extends GetView<HomeController> {
                 ),
                 Card(
                   elevation: 0.5,
-                  margin: EdgeInsets.only(top: 0, left: 0.5, right: 0),
+                  margin: const EdgeInsets.only(top: 0, left: 0.5, right: 0),
                   child: Container(
                     height: 80,
                     width: double.infinity,
@@ -144,7 +235,7 @@ class HomeView extends GetView<HomeController> {
                           color: Colors.black12.withOpacity(0.05),
                           spreadRadius: 1,
                           blurRadius: 1,
-                          offset: Offset(0.0, 0.5),
+                          offset: const Offset(0.0, 0.5),
                         ),
                       ],
                     ),
@@ -153,7 +244,7 @@ class HomeView extends GetView<HomeController> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         InkWell(
-                          onTap: () {},
+                          onTap: controller.logout,
                           child: Row(
                             children: [
                               Column(
@@ -162,21 +253,16 @@ class HomeView extends GetView<HomeController> {
                                 children: [
                                   Text(
                                     'Olá,',
-                                    style: TextStyle(
-                                      fontFamily: 'NunitoSans',
-                                      fontWeight: FontWeight.w400,
-                                      fontSize: 14,
-                                      color: Color(0xff59666F),
-                                    ),
+                                    style: AzTypography.nunitodeepBlueGray,
                                   ),
                                   Obx(
                                     () => Text(
                                       controller.userName.value
                                           .split(' ')
                                           .first,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontFamily: 'NunitoSans',
-                                        color: Color(0xff59666F),
+                                        color: AzColors.deepBlueGray,
                                         fontSize: 19,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -184,15 +270,15 @@ class HomeView extends GetView<HomeController> {
                                   ),
                                 ],
                               ),
-                              SizedBox(width: 16),
+                              const SizedBox(width: 16),
                               Container(
                                 width: 40,
                                 height: 40,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Color(0xFFFE7C6E),
+                                  color: AzColors.red,
                                 ),
-                                child: Center(
+                                child: const Center(
                                   child: Icon(
                                     FeatherIcons.user,
                                     color: Colors.white,
@@ -203,7 +289,7 @@ class HomeView extends GetView<HomeController> {
                             ],
                           ),
                         ),
-                        SizedBox(width: 40),
+                        const SizedBox(width: 40),
                       ],
                     ),
                   ),
